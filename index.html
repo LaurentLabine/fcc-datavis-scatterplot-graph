@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <title>Hello World Test page</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <script src="https://cdn.freecodecamp.org/testable-projects-fcc/v1/bundle.js"></script>
+    <div>
+    <h1 id="title">My First Scatter</h1>
+    <div id="template"></div>
+</div>
+
+    <script type="text/javascript">
+
+        const w = 1000;
+        const h = 500;
+        const padding = 60;
+        const barWidth = w;
+
+        const timeFormat = d3.timeFormat("%M:%S");
+
+        function Time(time)
+        {
+            time = time.split(':');
+
+            let date = new Date();
+                date.setMinutes(time[0])
+                date.setSeconds(time[1])
+
+            return date.getTime();
+        }
+
+        const svg = d3
+            .select("#template")
+            .append("svg")
+            .attr("id","SVG")
+            .attr("width", w)
+            .attr("height", h)
+            .append("g");
+
+        
+        //Async call to data extraction and rendering
+        d3.json("https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/cyclist-data.json", function(data) { 
+        // .then(function(data) 
+        //{
+
+            //Data Scaling
+            const xScale = d3.scaleLinear()
+                     .domain([d3.min(data, (d) => d["Year"]), d3.max(data, (d) => d["Year"])])
+                     .range([padding, w - padding]);
+
+            const yScale = d3.scaleLinear()
+                .domain([d3.min(data, (d) => Time(d["Time"])), d3.max(data, (d) => Time(d["Time"]))])
+                .range([h - padding, padding]);
+
+            var Tooltip = d3.select("#template")
+                            .append("div")
+                            .style("opacity", 0)
+                            .attr("class", "tooltip")
+                            .attr("id","tooltip")
+                            .style("background-color", "white")
+                            .style("border", "solid")
+                            .style("border-width", "2px")
+                            .style("border-radius", "5px")
+                            .style("padding", "5px")
+
+            // Three function that change the tooltip when user hover / move / leave a cell
+            var mouseover = function(d) {
+                Tooltip
+                .style("opacity", 1)
+                d3.select(this)
+                .style("stroke", "black")
+                .style("opacity", 1)
+            }
+            var mousemove = function(d) {
+
+                Tooltip
+                .html(": " + d.Name)
+                .attr("data-year",d.Year)
+                .style("top", (d3.event.pageY + 16) + "px")
+                .style("left", (d3.event.pageX + 16) + "px");
+
+            }
+            var mouseleave = function(d) {
+                Tooltip
+                .style("opacity", 0)
+                d3.select(this)
+                .style("stroke", "none")
+                .style("opacity", 0.8)
+            }
+
+            //Data Plotting
+            svg.selectAll("circle")
+                .data(data)
+                .enter()
+                .append("circle")
+                .attr("id", "circleBasicTooltip")
+                .attr("class","dot")
+                .attr("data-xvalue",d => d["Year"])
+                .attr("data-yvalue",d => new Date(Time(d["Time"])))
+                .attr("cx", d => xScale(d["Year"]))
+                .attr("cy", d => yScale(Time(d["Time"])))
+                .attr("r", 5)
+                .on("mouseover", mouseover)
+                .on("mousemove", mousemove)
+                .on("mouseleave", mouseleave);
+
+            var xAxis = d3.axisBottom().scale(xScale).tickFormat(d3.format('d'));
+            var yAxis = d3.axisLeft().scale(yScale).tickFormat(timeFormat);
+
+            svg.append("g")
+                .attr("transform", "translate(60, 0)")
+                .attr("id", "y-axis")
+                .call(yAxis)
+
+            svg.append("g")
+                .attr("transform", "translate(0," + (h - padding) + ")")
+                .attr("id","x-axis")
+                .call(xAxis);
+
+                svg.append("text").attr("id","legend").attr("x", 220).attr("y", h/2).attr("x", w-100).text("variable A").style("font-size", "15px")
+        });
+  
+      </script>
+</body>
+</html>
