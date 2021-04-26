@@ -1,18 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://d3js.org/d3.v4.min.js"></script>
-    <title>Hello World Test page</title>
+    <title>Scatterplot graph FCC Poroject 2</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="index.css">
 </head>
+
 <body>
     <script src="https://cdn.freecodecamp.org/testable-projects-fcc/v1/bundle.js"></script>
-    <div>
-    <h1 id="title">My First Scatter</h1>
-    <div id="template"></div>
-</div>
+    <!-- <div>
+        <h1 id="title">Doping in Professional Bicycle Racing </h1>
+        <h2> 35 Fastest times up Alpe d'Huez </h2>
+        <div id="template"></div>
+    </div> -->
 
     <script type="text/javascript">
 
@@ -23,74 +28,95 @@
 
         const timeFormat = d3.timeFormat("%M:%S");
 
-        function Time(time)
-        {
+        function Time(time) {
             time = time.split(':');
 
             let date = new Date();
-                date.setMinutes(time[0])
-                date.setSeconds(time[1])
+            date.setMinutes(time[0])
+            date.setSeconds(time[1])
 
             return date.getTime();
         }
 
         const svg = d3
-            .select("#template")
+            .select("body")
             .append("svg")
-            .attr("id","SVG")
+            .attr("id", "SVG")
             .attr("width", w)
             .attr("height", h)
+            .style("background-color", "white")
+            .style("border", "2px solid #404080")
+            .style("border-radius", "10px")
             .append("g");
 
-        
+        // title
+        svg
+            .append('text')
+            .attr('id', 'title')
+            .attr('x', w / 2)
+            .attr('y', padding / 2)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '30px')
+            .style("fill", "#404080")
+            .text('Doping in Professional Bicycle Racing');
+
+        // subtitle
+        svg
+            .append('text')
+            .attr('x', w / 2)
+            .attr('y', padding / 2 + 25)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '16px')
+            .style("fill", "#404080")
+            .text("35 Fastest times up Alpe d'Huez");
+
         //Async call to data extraction and rendering
-        d3.json("https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/cyclist-data.json", function(data) { 
-        // .then(function(data) 
-        //{
+        d3.json("https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/cyclist-data.json", function (data) {
 
             //Data Scaling
             const xScale = d3.scaleLinear()
-                     .domain([d3.min(data, (d) => d["Year"]), d3.max(data, (d) => d["Year"])])
-                     .range([padding, w - padding]);
+                .domain([d3.min(data, (d) => d["Year"]), d3.max(data, (d) => d["Year"])])
+                .range([padding, w - padding]);
 
             const yScale = d3.scaleLinear()
                 .domain([d3.min(data, (d) => Time(d["Time"])), d3.max(data, (d) => Time(d["Time"]))])
                 .range([h - padding, padding]);
 
-            var Tooltip = d3.select("#template")
-                            .append("div")
-                            .style("opacity", 0)
-                            .attr("class", "tooltip")
-                            .attr("id","tooltip")
-                            .style("background-color", "white")
-                            .style("border", "solid")
-                            .style("border-width", "2px")
-                            .style("border-radius", "5px")
-                            .style("padding", "5px")
+            var Tooltip = d3.select("body")
+                .append("div")
+                .style("opacity", 0)
+                .attr("class", "tooltip")
+                .attr("id", "tooltip")
+                .style("background-color", "black")
+                .style("border", "solid")
+                .style("border-width", "2px")
+                .style("border-radius", "5px")
+                .style("padding", "5px")
 
             // Three function that change the tooltip when user hover / move / leave a cell
-            var mouseover = function(d) {
+            var mouseover = function (d) {
                 Tooltip
-                .style("opacity", 1)
+                    .style("opacity", 1)
+                    .style("background-color", "#404080")
+                    .style("color", "white")
                 d3.select(this)
-                .style("stroke", "black")
-                .style("opacity", 1)
+                    .style("opacity", 1)
             }
-            var mousemove = function(d) {
+            var mousemove = function (d) {
 
                 Tooltip
-                .html(": " + d.Name)
-                .attr("data-year",d.Year)
-                .style("top", (d3.event.pageY + 16) + "px")
-                .style("left", (d3.event.pageX + 16) + "px");
+                    .html(d.Name + " in " + d.Year + " with " + d.Time + "<br>" + d.Doping)
+                    .attr("data-year", d.Year)
+                    .style("top", (d3.event.pageY + 16) + "px")
+                    .style("left", (d3.event.pageX + 16) + "px");
 
             }
-            var mouseleave = function(d) {
+            var mouseleave = function (d) {
                 Tooltip
-                .style("opacity", 0)
+                    .style("opacity", 0)
                 d3.select(this)
-                .style("stroke", "none")
-                .style("opacity", 0.8)
+                    .style("stroke", "black")
+                    .style("opacity", 0.8)
             }
 
             //Data Plotting
@@ -99,18 +125,34 @@
                 .enter()
                 .append("circle")
                 .attr("id", "circleBasicTooltip")
-                .attr("class","dot")
-                .attr("data-xvalue",d => d["Year"])
-                .attr("data-yvalue",d => new Date(Time(d["Time"])))
+                .attr("class", "dot")
+                .attr("data-xvalue", d => d["Year"])
+                .attr("data-yvalue", d => new Date(Time(d["Time"])))
                 .attr("cx", d => xScale(d["Year"]))
                 .attr("cy", d => yScale(Time(d["Time"])))
-                .attr("r", 5)
+                .attr("r", 7)
+                .style('fill', d => d.Doping ? "#FFAEBC" : "#A0E7E5")
+                .style('stroke', "black")
                 .on("mouseover", mouseover)
                 .on("mousemove", mousemove)
                 .on("mouseleave", mouseleave);
 
             var xAxis = d3.axisBottom().scale(xScale).tickFormat(d3.format('d'));
             var yAxis = d3.axisLeft().scale(yScale).tickFormat(timeFormat);
+
+            svg.append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 0)
+                .attr("x", 0 - (h / 2))
+                .attr("dy", "1em")
+                .style("text-anchor", "middle")
+                .text("Time (mm:ss)");
+
+            var datasource = svg.append("text")      // text label for the x axis
+                .attr("x", 360)
+                .attr("y", 480)
+                .style("text-anchor", "middle")
+                .text("Data taken from freeCodeCamp");
 
             svg.append("g")
                 .attr("transform", "translate(60, 0)")
@@ -119,12 +161,20 @@
 
             svg.append("g")
                 .attr("transform", "translate(0," + (h - padding) + ")")
-                .attr("id","x-axis")
+                .attr("id", "x-axis")
                 .call(xAxis);
 
-                svg.append("text").attr("id","legend").attr("x", 220).attr("y", h/2).attr("x", w-100).text("variable A").style("font-size", "15px")
+            // select the svg area
+            var legendContainer = svg.append('g').attr('id', 'legend');
+
+            // Legend
+            legendContainer.append("circle").attr("cx", w - 2 * padding - 20).attr("cy", h / 2).attr("r", 6).style("fill", "#FFAEBC").attr("stroke", "black")
+            legendContainer.append("circle").attr("cx", w - 2 * padding - 20).attr("cy", h / 2 - 30).attr("r", 6).style("fill", "#A0E7E5").attr("stroke", "black")
+            legendContainer.append("text").attr("x", w - 2 * padding).attr("y", h / 2).text("Allegations").style("font-size", "15px").style("color", "#404080").attr("alignment-baseline", "middle")
+            legendContainer.append("text").attr("x", w - 2 * padding).attr("y", h / 2 - 30).text("No Allegations").style("font-size", "15px").attr("alignment-baseline", "middle")
         });
-  
-      </script>
+
+    </script>
 </body>
+
 </html>
